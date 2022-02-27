@@ -8,14 +8,28 @@ import math
 import numpy
 
 def calculate_coords(u, v):
+    
+    # pulled from https://github.com/ligerbots/VisionServer, BallFinder2020
 
-    yaw_angle = math.degrees(math.atan((u - config.cx) / config.focal_x))
-    pitch_angle = -math.degrees(math.atan((v - config.cy) / config.focal_y))
+    cam_matrix = config.cameramtx
 
-    #print("pitch angle: " + str(pitch_angle))
-    #print("yaw angle: " + str(yaw_angle))
 
-    return pitch_angle, yaw_angle
+    x_prime = (u - cam_matrix[0, 2]) / cam_matrix[0, 0]
+    y_prime = -(v - cam_matrix[1, 2]) / cam_matrix[1, 1]
+
+    ax = math.atan2(x_prime, 1.0)
+    ay = math.atan2(y_prime * math.cos(ax), 1.0)
+
+    print(str(ax) + " vs " + str(math.atan(x_prime)))
+    
+    target_height = 21
+    camera_height = 4
+    tilt_angle = 0
+
+
+    d = (target_height - camera_height) / math.tan(tilt_angle + ay)
+
+    return math.degrees(ax), math.degrees(ay), d
 
 def calc_contours(c):
     M = cv2.moments(c)
@@ -25,31 +39,7 @@ def calc_contours(c):
 
     return cx,cy
 
-input_port = 0
-num_ports = 4
-
 cap = cv2.VideoCapture(1)
-_, frame = cap.read()
-
-# Keep trying until image is obtained
-while frame is None:
-
-    print("Error: No image to process. Cannot run vision pipeline. Are images being captured from the camera?")
-
-    # Try a different port
-    input_port = (input_port + 1) % num_ports
-    cap = cv2.VideoCapture(input_port)
-
-    # Read frame
-    _, frame = cap.read()
-
-    print("Trying /dev/video" + str(input_port))
-
-    # Wait before trying the next USB port
-    time.sleep(1)
-
-# Put image width and height on table
-h, w, _ = frame.shape
 
 # Run the pipeline on the video stream
 while True:
@@ -60,7 +50,7 @@ while True:
         continue
 
     # Undistort the frame
-    temp = cv2.undistort(frame, config.cameramtx, config.dist, None, config.newcameramtx)
+    temp = cv2.undistort(frame, config.cameramtx, config.dist, None, config.cameramtx)
     # TODO Crop the frame using roi
     frame = temp
 
@@ -94,15 +84,18 @@ while True:
         frame = temp
 
         # Calculate angle to target
-        pitch_angle, yaw_angle = calculate_coords(x, y)
+        pitch_angle, yaw_angle, d = calculate_coords(x, y)
 
-        temp = cv2.putText(frame, "(" + str(x) + ", " + str(y) + ")", (x + config.text_offset, y - config.text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.color, config.line_thickness)
+        temp = cv2.putText(frame, "(" + str(round(pitch_angle, 3)) + ", " + str(round(yaw_angle, 3)) + ", " + str(round(d, 3)) +  ")", (x + config.text_offset, y - config.text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.color, config.line_thickness)
         frame = temp
         
         print("x: " + str(x) + "; y: " + str(y))
         print("pitch: " + str(pitch_angle) + "; yaw: " + str(yaw_angle))
+        print(config.cameramtx[0, 2])
+        print(config.cameramtx[0][2])
 
     cv2.imshow('image', frame)
+    cv2.imshow('mask', visionPipeline.hsv_threshold_output)
 
     if cv2.waitKey(1000) & 0xFF == ord('q'):
         break

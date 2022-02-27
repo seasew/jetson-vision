@@ -1,21 +1,12 @@
 import numpy as np
 
 # [ [fx, 0, cx], [0, fy, cy], [0, 0, 1] ]
-cameramtx = np.array([[662.3461673, 0, 293.51663222], [0, 664.22509824, 243.65759666],[  0, 0, 1]] )
-dist = np.array([[2.47936730e-01, -2.34092515e+00, 2.73073943e-03, -1.58373364e-03, 7.08333922e+00]])
+cameramtx = np.array([[481.32639529,   0,         327.59856174],
+    [  0,         479.64805952, 261.18746562],
+    [  0,           0,           1        ]])
+dist = np.array([[-4.37450682e-01,  3.84366023e-01, -6.00142834e-04, -3.12503696e-04,
+  -3.02112133e-01]])
 
-newcameramtx = np.array([[675.30944824, 0, 295.30676157], [0, 668.10913086, 243.85860464], [0, 0, 1]])
-roi = [] # TODO
-
-focal_x = newcameramtx[0][0]
-focal_y = newcameramtx[1][1]
-
-cx = newcameramtx[0][2]
-cy = newcameramtx[1][2] 
-
-nt_ip = '10.1.92.2'
-
-nt_name = 'jetson'
 
 # Constants for drawing on image
 line_thickness = 1

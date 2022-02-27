@@ -19,7 +19,7 @@ class RedContoursPipeline:
 
         self.__hsv_threshold_input = self.blur_output
         self.__hsv_threshold_hue = [0.0, 11.058020477815704]
-        self.__hsv_threshold_saturation = [100, 255.0]
+        self.__hsv_threshold_saturation = [80, 255.0]
         self.__hsv_threshold_value = [150, 255.0]
 
         self.hsv_threshold_output = None
@@ -30,7 +30,7 @@ class RedContoursPipeline:
         self.find_contours_output = None
 
         self.__filter_contours_contours = self.find_contours_output
-        self.__filter_contours_min_area = 1000.0
+        self.__filter_contours_min_area = 10
         self.__filter_contours_min_perimeter = 0.0
         self.__filter_contours_min_width = 0
         self.__filter_contours_max_width = 1000
